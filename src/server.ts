@@ -9,7 +9,6 @@ let server: Server;
 
 const startServer = async () => {
     try {
-        console.log('------------')
         await mongoose.connect(envVars.DB_URL)
 
         console.log("Connected to DB!!");
