@@ -28,6 +28,11 @@ const createUser = async (payload: Partial<IUser>) => {
 }
 
 
+export const getMyProfile = async (userId: string) => {
+  const user = await User.findById(userId).select('-password');
+  return user;
+};
+
 export const UserServices = {
     createUser
 }
