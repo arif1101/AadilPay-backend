@@ -1,0 +1,41 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+import {Request, Response, NextFunction } from "express";
+import { catchAsync } from "../../utils/catchAsync";
+import { sendResponse } from "../../utils/sendResponse";
+import httpStatus from "http-status-codes"
+import { AgentServices } from "./agent.service";
+
+
+
+const agentCashIn = catchAsync(async(req: Request, res: Response, next: NextFunction) => {
+    const agent = req.user; //AGENT
+    const {userId, amount} = req.body
+    const result = await AgentServices.agentCashIn(agent, userId, amount);
+
+    sendResponse(res, {
+        statusCode: httpStatus.OK,
+        success: true,
+        message: "Cash-in successful",
+        data: result,
+    });
+})
+
+// Agent → Withdraw money from user's wallet
+export const agentCashOut = catchAsync(async (req, res) => {
+  const agent = req.user;
+  const { userId, amount } = req.body;
+
+  const result = await AgentServices.agentCashOut(agent, userId, amount);
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Cash-out successful",
+    data: result,
+  });
+});
+
+
+export const AgentControllers = {
+    agentCashIn,
+    agentCashOut
+} 
