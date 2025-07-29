@@ -63,8 +63,55 @@ const withdraw = async(user: JwtPayload, amount:number, agentId: string) => {
     }
 }
 
+// send money 
+const sendMoney = async(sender: JwtPayload, receiverId: string, amount: number) => {
+    if(!receiverId || !amount || amount<=0){
+        throw new AppError(httpStatus.BAD_REQUEST, "Invalid transfer request");
+    }
+
+    if(sender.userId.toString() === receiverId){
+        throw new AppError(httpStatus.BAD_REQUEST, "Cannot transfer to self");
+    }
+
+    const [senderWallet, receiverWallet] = await Promise.all([
+        Wallet.findOne({ user: sender.userId }),
+        Wallet.findOne({ user: receiverId }),
+    ]);
+    if(!senderWallet || senderWallet.balance < amount){
+        throw new AppError(httpStatus.BAD_REQUEST, "Insufficient balance");
+    }
+    if (!receiverWallet) {
+        throw new AppError(httpStatus.BAD_REQUEST, "Receiver wallet not found");
+    }
+
+    const session = await mongoose.startSession();
+    session.startTransaction();
+
+    try {
+        senderWallet.balance -= amount;
+        receiverWallet.balance += amount;
+
+        await senderWallet.save({ session });
+        await receiverWallet.save({ session });
+
+        await session.commitTransaction();
+        session.endSession();
+
+        return {
+        senderWallet,
+        receiverWallet,
+        };
+    } catch (err) {
+        await session.abortTransaction();
+        session.endSession();
+        throw new AppError(httpStatus.INTERNAL_SERVER_ERROR, "Transfer failed");
+    }
+
+}
+
 
 export const WalletServices = {
     getMyWallet,
-    withdraw
+    withdraw,
+    sendMoney
 }
