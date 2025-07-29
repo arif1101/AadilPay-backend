@@ -11,4 +11,6 @@ const router = Router()
 
 router.get("/me", checkAuth(...Object.values(Role)), WalletControllers.getMyWallet)
 
+router.post("/withdraw", checkAuth(Role.USER), WalletControllers.withdraw)
+
 export const WalletRoutes = router

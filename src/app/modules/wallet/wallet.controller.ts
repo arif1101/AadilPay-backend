@@ -21,7 +21,22 @@ export const getMyWallet = catchAsync(async(req: Request, res: Response, next: N
 
 })
 
+const withdraw = catchAsync(async(req: Request, res: Response, next: NextFunction) => {
+    const {amount, agentId} = req.body;
+    const user = req.user;
+
+    const result = await WalletServices.withdraw(user, amount, agentId);
+
+    sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Withdrawal successful",
+    data: result,
+    });
+})
+
 
 export const WalletControllers = {
-    getMyWallet
+    getMyWallet,
+    withdraw
 }
