@@ -46,7 +46,7 @@ export const getLoggedInUser = async (req: Request, res: Response) => {
 const updateUser = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
   const verifiedToken = req.user as JwtPayload;
 
-  const userId = verifiedToken?.userId; // ✅ Extract from token, not _id
+  const userId = verifiedToken?.userId;
 
   if (!userId) {
     throw new AppError(httpStatus.UNAUTHORIZED, "Invalid user information");
