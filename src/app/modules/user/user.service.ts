@@ -48,7 +48,7 @@ export const updateUser = async (userId: string, payload: Partial<IUser>, decode
             throw new AppError(httpStatus.FORBIDDEN, "Your are not authorized")
         }
     }
-    if(payload.isApproved || payload.commissionRate) {
+    if(payload.isApproved || payload.commissionRate || payload.status) {
         if(decodedToken.role === Role.USER || decodedToken.role === Role.AGENT){
             throw new AppError(httpStatus.FORBIDDEN, "Your are not authorized")
         }
