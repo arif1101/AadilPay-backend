@@ -4,6 +4,24 @@ import { catchAsync } from "../../utils/catchAsync";
 import { sendResponse } from "../../utils/sendResponse";
 import httpStatus from "http-status-codes"
 import { AgentServices } from "./agent.service";
+import { Transaction } from "../transaction/transaction.model";
+
+
+
+const getAgentTransactions = catchAsync(
+  async (req: Request, res: Response) => {
+    const agentId = req.user.userId;
+
+    const result = await AgentServices.getAgentTransactions(agentId);
+
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: "Agent transactions fetched successfully",
+      data: result,
+    });
+  }
+);
 
 
 
@@ -37,5 +55,6 @@ export const agentCashOut = catchAsync(async (req, res) => {
 
 export const AgentControllers = {
     agentCashIn,
-    agentCashOut
+    agentCashOut,
+    getAgentTransactions
 } 
