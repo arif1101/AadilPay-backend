@@ -35,8 +35,25 @@ const withdraw = catchAsync(async(req: Request, res: Response, next: NextFunctio
     });
 })
 
+// transfer or send money 
+
+const sendMoney = catchAsync(async(req: Request, res: Response, next: NextFunction) => {
+    const {receiverId, amount} = req.body
+    const sender = req.user
+    const result = await WalletServices.sendMoney(sender, receiverId, amount)
+    console.log("result : ", result)
+
+    sendResponse(res, {
+        statusCode: httpStatus.OK,
+        success: true,
+        message: "send money successful",
+        data: result,
+    });
+})
+
 
 export const WalletControllers = {
     getMyWallet,
-    withdraw
+    withdraw,
+    sendMoney
 }

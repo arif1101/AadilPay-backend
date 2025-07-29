@@ -67,6 +67,7 @@ const updateUser = catchAsync(async (req: Request, res: Response, next: NextFunc
 
 
 
+
 export const UserControllers = {
     createUser,
     updateUser

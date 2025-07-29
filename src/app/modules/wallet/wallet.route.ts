@@ -13,4 +13,6 @@ router.get("/me", checkAuth(...Object.values(Role)), WalletControllers.getMyWall
 
 router.post("/withdraw", checkAuth(Role.USER), WalletControllers.withdraw)
 
+router.post("/transfer", checkAuth(Role.USER, Role.AGENT), WalletControllers.sendMoney)
+
 export const WalletRoutes = router
