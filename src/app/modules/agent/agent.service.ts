@@ -9,6 +9,17 @@ import { TransactionType } from "../transaction/transaction.constant";
 import { TransactionStatus } from "../transaction/transaction.interface";
 
 
+const getAgentTransactions = async (agentId: string) => {
+  const transactions = await Transaction.find({
+    $or: [
+      { user: agentId },
+      { receiver: agentId }
+    ]
+  }).sort({ createdAt: -1 });
+
+  return transactions;
+};
+
 const agentCashIn = async(agent: JwtPayload, userId: string, amount: number) => {
     if(!userId || amount<0) {
         throw new AppError(httpStatus.BAD_REQUEST, "Invalid input");
@@ -105,5 +116,6 @@ const agentCashOut = async(agent: JwtPayload, userId: string, amount: number) =>
 
 export const AgentServices = {
     agentCashIn,
-    agentCashOut
+    agentCashOut,
+    getAgentTransactions
 }
