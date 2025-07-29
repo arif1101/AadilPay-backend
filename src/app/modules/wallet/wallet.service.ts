@@ -5,6 +5,9 @@ import { Wallet } from "./wallet.mode"
 import httpStatus from "http-status-codes"
 import mongoose from "mongoose"
 import { User } from "../user/user.model"
+import { Transaction } from "../transaction/transaction.model"
+import { TransactionType } from "../transaction/transaction.constant"
+import { TransactionStatus } from "../transaction/transaction.interface"
 
 
 const getMyWallet = async(userId: string) => {
@@ -24,6 +27,7 @@ const withdraw = async(user: JwtPayload, amount:number, agentId: string) => {
 
     // get user's wallet 
     const wallet = await Wallet.findOne({user: user.userId})
+    console.log('wallet', wallet)
     if(!wallet || wallet.balance<amount){
         throw new AppError(httpStatus.BAD_REQUEST, "Insufficient balance")
     }
@@ -45,6 +49,7 @@ const withdraw = async(user: JwtPayload, amount:number, agentId: string) => {
     session.startTransaction();
     
     try{
+        
         wallet.balance -= amount;
         await wallet.save({session});
 
@@ -52,11 +57,19 @@ const withdraw = async(user: JwtPayload, amount:number, agentId: string) => {
         agentWallet.balance+=amount;
         await agentWallet.save({session})
 
+        await Transaction.create([{
+            user: user.userId,
+            type: TransactionType.WITHDRAW,
+            amount,
+            status: TransactionStatus.SUCCESS,
+            receiver: agentId
+        }], {session})
         await session.commitTransaction();
         session.endSession();
         
         return {userWallet: wallet, agentWallet}
     }catch(err){
+        console.error("Withdraw error details:", err);
         await session.abortTransaction();
         session.endSession();
         throw new AppError(httpStatus.INTERNAL_SERVER_ERROR, "withdraw failed")
@@ -93,6 +106,14 @@ const sendMoney = async(sender: JwtPayload, receiverId: string, amount: number) 
 
         await senderWallet.save({ session });
         await receiverWallet.save({ session });
+
+        await Transaction.create([{
+            user: sender.userId,
+            type: TransactionType.TRANSFER,
+            amount,
+            status: TransactionStatus.SUCCESS,
+            receiver: receiverId
+        }], {session})
 
         await session.commitTransaction();
         session.endSession();

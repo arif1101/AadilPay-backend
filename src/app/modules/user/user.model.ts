@@ -18,7 +18,8 @@ const userSchema = new Schema<IUser>({
     isApproved: {type: Boolean, default: false},
     commissionRate: {type: Number, default: 0},
     status: {
-        type: String, enum: Object.values(UserStatus), default: UserStatus.ACTIVE
+        type: String, 
+        enum: Object.values(UserStatus), default: UserStatus.ACTIVE
     },
 
 },{
