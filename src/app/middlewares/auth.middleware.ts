@@ -7,7 +7,6 @@ import { envVars } from '../config/env';
 export const auth = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const token = req.headers.authorization
-    console.log("------------",token)
     if (!token) return res.status(401).json({ message: 'Unauthorized' });
 
     const decoded = jwt.verify(token, envVars.JWT_ACCESS_SECRET) as { userId: string };
