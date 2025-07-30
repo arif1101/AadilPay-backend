@@ -19,6 +19,10 @@ router.get("/transactions", checkAuth("ADMIN"), adminControllers.getAllTransacti
 router.patch("/wallet/active/:id", checkAuth(Role.ADMIN), WalletControllers.activeWallet)
 
 
+router.patch("/agents/suspend/:id", checkAuth(Role.ADMIN), adminControllers.suspendAgent)
+
+router.patch("/agents/approved/:id", checkAuth(Role.ADMIN), adminControllers.approvedAgent)
+
 
 
 export const AdminRouter =  router

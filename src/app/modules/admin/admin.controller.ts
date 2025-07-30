@@ -3,7 +3,7 @@ import {Request, Response, NextFunction } from "express";
 import { catchAsync } from "../../utils/catchAsync";
 import { sendResponse } from "../../utils/sendResponse";
 import { adminServices } from "./admin.service";
-
+import httpStatus from "http-status-codes"
 
 
 
@@ -50,9 +50,35 @@ export const getAllTransactions = catchAsync(async (req: Request, res: Response)
   });
 });
 
+const suspendAgent = catchAsync(async(req: Request, res: Response, next: NextFunction) => {
+    const agentId = req.params.id;
+    const result = await adminServices.suspandAgent(agentId);
+    console.log(result)
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: 'Agent suspended',
+      data: result,
+    });
+})
+
+const approvedAgent = catchAsync(async(req: Request, res: Response, next: NextFunction) => {
+    const agentId = req.params.id;
+    const result = await adminServices.approvedAgent(agentId);
+    console.log(result)
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: 'Agent approved',
+      data: result,
+    });
+})
+
 export const adminControllers = {
     getAllUsers,
     getAllAgents,
     getAllWallets,
-    getAllTransactions
+    getAllTransactions,
+    suspendAgent,
+    approvedAgent
 }
