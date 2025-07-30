@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { Role, UserStatus } from "./user.interface";
+import { AccountStatus, Role, UserStatus } from "./user.interface";
 
 export const createUserZodSchema = z.object({
   name: z
@@ -40,16 +40,16 @@ export const createUserZodSchema = z.object({
     .optional(),
 
   role: z
-    .enum([Role.USER, Role.AGENT, Role.ADMIN])
+    .enum([Role.USER, Role.AGENT, Role.ADMIN], "Roll will be USER or AGENT")
     .default(Role.USER),
 
   status: z
     .enum([UserStatus.ACTIVE, UserStatus.BLOCKED])
     .default(UserStatus.ACTIVE),
 
-  isApproved: z
-    .boolean()
-    .default(false),
+  accountStatus: z
+    .enum([AccountStatus.APPROVED, AccountStatus.SUSPENDED])
+    .default(AccountStatus.APPROVED),
 
   commissionRate: z
     .number()

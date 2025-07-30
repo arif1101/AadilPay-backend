@@ -10,4 +10,5 @@ router.get('/transactions', checkAuth('AGENT'), AgentControllers.getAgentTransac
 
 router.post("/cash-in", checkAuth("AGENT"),AgentControllers.agentCashIn)
 router.post("/cash-out", checkAuth("AGENT"), agentCashOut);
+
 export const AgentRoutes = router

@@ -1,8 +1,7 @@
 import { Router } from "express";
-import { getLoggedInUser, UserControllers } from "./user.controller";
+import { UserControllers } from "./user.controller";
 import { validateRequest } from "../../middlewares/validateRequest";
 import { createUserZodSchema } from "./user.validation";
-import { auth } from "../../middlewares/auth.middleware";
 import { checkAuth } from "../../middlewares/checkAuth";
 import { Role } from "./user.interface";
 
@@ -11,7 +10,7 @@ import { Role } from "./user.interface";
 
 const router = Router()
 
-router.get('/me', auth, getLoggedInUser);
+router.get('/me', checkAuth(...Object.values(Role)),UserControllers.getMyProfile);
 
 router.post("/register",validateRequest(createUserZodSchema),UserControllers.createUser)
 
