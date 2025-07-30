@@ -8,6 +8,7 @@ import { User } from "../user/user.model"
 import { Transaction } from "../transaction/transaction.model"
 import { TransactionType } from "../transaction/transaction.constant"
 import { TransactionStatus } from "../transaction/transaction.interface"
+import { WalletStatus } from "./wallet.interface"
 
 
 const getMyWallet = async(userId: string) => {
@@ -129,9 +130,32 @@ const sendMoney = async(sender: JwtPayload, receiverId: string, amount: number) 
 
 }
 
+const blockWallet = async(walletId : string) => {
+    const wallet = await Wallet.findById(walletId);
+
+    if(!wallet){
+        throw new AppError(httpStatus.NOT_FOUND, "Wallet not found");
+    }
+
+    wallet.status = WalletStatus.BLOCKED;
+    await wallet.save() ;
+    return wallet
+}
+
+const activeWallet = async (walletId: string) => {
+    const wallet = await Wallet.findById(walletId);
+    if (!wallet) throw new AppError(httpStatus.NOT_FOUND, 'Wallet not found');
+
+    wallet.status = WalletStatus.ACTIVE;
+    await wallet.save();
+    return wallet;
+}
+
 
 export const WalletServices = {
     getMyWallet,
     withdraw,
-    sendMoney
+    sendMoney,
+    blockWallet,
+    activeWallet
 }
