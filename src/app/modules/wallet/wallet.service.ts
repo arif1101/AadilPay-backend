@@ -27,7 +27,6 @@ const withdraw = async(user: JwtPayload, amount:number, agentId: string) => {
 
     // get user's wallet 
     const wallet = await Wallet.findOne({user: user.userId})
-    console.log('wallet', wallet)
     if(!wallet || wallet.balance<amount){
         throw new AppError(httpStatus.BAD_REQUEST, "Insufficient balance")
     }

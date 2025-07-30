@@ -41,7 +41,6 @@ const sendMoney = catchAsync(async(req: Request, res: Response, next: NextFuncti
     const {receiverId, amount} = req.body
     const sender = req.user
     const result = await WalletServices.sendMoney(sender, receiverId, amount)
-    console.log("result : ", result)
 
     sendResponse(res, {
         statusCode: httpStatus.OK,

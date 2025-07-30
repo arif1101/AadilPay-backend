@@ -44,8 +44,6 @@ export const getMyProfile = async (userId: string) => {
 
 export const updateUser = async (userId: string, payload: Partial<IUser>, decodedToken: JwtPayload) => {
 
-    console.log("-------",userId)
-
     const isUserExist = await User.findById(userId);
 
     if(!isUserExist) {
