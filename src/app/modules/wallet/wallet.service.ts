@@ -9,10 +9,11 @@ import { Transaction } from "../transaction/transaction.model"
 import { TransactionType } from "../transaction/transaction.constant"
 import { TransactionStatus } from "../transaction/transaction.interface"
 import { WalletStatus } from "./wallet.interface"
+import { Role } from "../user/user.interface"
 
 
 const getMyWallet = async(userId: string) => {
-    const wallet = await Wallet.findOne({user: userId})
+    const wallet = await Wallet.findOne({user: userId}).populate("user", 'name')
 
     if(!wallet){
         throw new AppError(httpStatus.NOT_FOUND, "Wallet not found")
@@ -78,6 +79,11 @@ const withdraw = async(user: JwtPayload, amount:number, agentId: string) => {
 
 // send money 
 const sendMoney = async(sender: JwtPayload, receiverId: string, amount: number) => {
+    const user = await User.findById(receiverId)
+    if (!user || user.role !== Role.USER) {
+    throw new AppError(httpStatus.BAD_REQUEST, "Send money only to valid users");
+    }
+    
     if(!receiverId || !amount || amount<=0){
         throw new AppError(httpStatus.BAD_REQUEST, "Invalid transfer request");
     }
