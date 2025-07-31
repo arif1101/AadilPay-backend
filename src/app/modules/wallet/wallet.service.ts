@@ -22,6 +22,34 @@ const getMyWallet = async(userId: string) => {
     return wallet
 }
 
+const topUp = async(user : JwtPayload, amount: number) => {
+    if(!amount || amount <=0){
+        throw new AppError(httpStatus.BAD_REQUEST, 'Invalid top-up amount');
+    }
+    const wallet = await Wallet.findOne({ user: user.userId });
+    if (!wallet) {
+        throw new AppError(httpStatus.NOT_FOUND, 'Wallet not found');
+    }
+
+    console.log(wallet)
+    if (wallet.status === WalletStatus.BLOCKED) {
+        throw new AppError(httpStatus.BAD_REQUEST, 'No topUp, Wallet blocked');
+    }
+    
+    wallet.balance += amount;
+    await wallet.save();
+
+    await Transaction.create({
+        user: user.userId,
+        type: TransactionType.TOP_UP,
+        amount,
+        status: TransactionStatus.SUCCESS,
+    });
+
+    return wallet
+
+}
+
 const withdraw = async(user: JwtPayload, amount:number, agentId: string) => {
     if(amount<=0){
         throw new AppError(httpStatus.BAD_REQUEST, "Invalid withdraw amoun")
@@ -163,5 +191,6 @@ export const WalletServices = {
     withdraw,
     sendMoney,
     blockWallet,
-    activeWallet
+    activeWallet,
+    topUp
 }

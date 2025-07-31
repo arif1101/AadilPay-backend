@@ -15,4 +15,6 @@ router.post("/withdraw", checkAuth(Role.USER), WalletControllers.withdraw)
 
 router.post("/transfer", checkAuth(Role.USER, Role.AGENT), WalletControllers.sendMoney)
 
+router.post("/top-up", checkAuth(Role.USER), WalletControllers.topUp)
+
 export const WalletRoutes = router
