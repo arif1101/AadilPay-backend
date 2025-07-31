@@ -18,6 +18,8 @@ router.get("/transactions", checkAuth("ADMIN"), adminControllers.getAllTransacti
 
 router.patch("/wallet/active/:id", checkAuth(Role.ADMIN), WalletControllers.activeWallet)
 
+router.patch("/wallet/block/:id", checkAuth(Role.ADMIN), WalletControllers.blockWallet)
+
 
 router.patch("/agents/suspend/:id", checkAuth(Role.ADMIN), adminControllers.suspendAgent)
 

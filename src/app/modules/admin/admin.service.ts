@@ -23,7 +23,7 @@ const getAllWallets = async() => {
 }
 
 const getAllTransactions = async() => {
-    return await Transaction.find().populate("user", 'name phone').populate("receiver", 'name phone')
+    return await Transaction.find().populate("user", 'name phone role').populate("receiver", 'name phone role')
 }
 
 const suspandAgent = async (agentId: string) => {
