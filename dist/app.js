@@ -10,6 +10,7 @@ const routes_1 = require("./app/routes");
 const globalErrorHandler_1 = require("./app/middlewares/globalErrorHandler");
 const app = (0, express_1.default)();
 app.use(express_1.default.json());
+app.set("trust proxy", 1);
 app.use((0, cors_1.default)());
 app.use("/api", routes_1.router);
 app.get("/", (req, res) => {

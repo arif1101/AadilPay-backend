@@ -7,17 +7,14 @@ import { globalErrorHandler } from './app/middlewares/globalErrorHandler';
 const app = express()
 
 app.use(express.json())
+app.set("trust proxy",1)
 app.use(cors())
-
 app.use("/api", router)
-
 app.get("/", (req: Request, res: Response) => {
     res.status(200).json({
         message: "Welcome to Tour Management System Backend"
     })
 })
-
-
 app.use(globalErrorHandler)
 app.use(notFound)
 
