@@ -23,7 +23,9 @@ const getAgentTransactions = async (agentId: string) => {
   return transactions;
 };
 
-const agentCashIn = async(agent: JwtPayload, userId: string, amount: number) => {
+const agentCashIn = async(agent: JwtPayload, userId: string, amount: number) => 
+    
+    {
     if(!userId || amount<0) {
         throw new AppError(httpStatus.BAD_REQUEST, "Invalid input");
     }
