@@ -33,7 +33,7 @@ const agentCashIn = async(agent: JwtPayload, userId: string, amount: number) => 
 
     
     if(accountStatus?.accountStatus === AccountStatus.SUSPENDED){
-        throw new AppError(httpStatus.BAD_REQUEST, "Account sespended")
+        throw new AppError(httpStatus.BAD_REQUEST, "Account suspended")
     }
     
     if(walletStatus?.status === WalletStatus.BLOCKED){
@@ -81,6 +81,7 @@ const agentCashIn = async(agent: JwtPayload, userId: string, amount: number) => 
 }
 
 const agentCashOut = async(agent: JwtPayload, userId: string, amount: number) => {
+    
     if(!userId || amount<0 || agent.userId.toString() === userId){
         throw new AppError(httpStatus.BAD_REQUEST, "Invalid input: User ID or amount incorrect");
     }

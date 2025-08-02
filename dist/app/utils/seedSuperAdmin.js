@@ -30,7 +30,7 @@ const seedSuperAdmin = () => __awaiter(void 0, void 0, void 0, function* () {
             role: user_interface_1.Role.ADMIN,
             email: env_1.envVars.ADMIN_EMAIL,
             password: hashedPasssword,
-            phone: "01402667768"
+            phone: env_1.envVars.PHONE
         };
         const Admin = yield user_model_1.User.create(payload);
         console.log("Admin create successfull ! \n");

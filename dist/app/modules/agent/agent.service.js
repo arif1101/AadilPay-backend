@@ -39,7 +39,7 @@ const agentCashIn = (agent, userId, amount) => __awaiter(void 0, void 0, void 0,
     const accountStatus = yield user_model_1.User.findById(agent.userId);
     const walletStatus = yield wallet_mode_1.Wallet.findOne({ user: userId });
     if ((accountStatus === null || accountStatus === void 0 ? void 0 : accountStatus.accountStatus) === user_interface_1.AccountStatus.SUSPENDED) {
-        throw new AppError_1.default(http_status_codes_1.default.BAD_REQUEST, "Account sespended");
+        throw new AppError_1.default(http_status_codes_1.default.BAD_REQUEST, "Account suspended");
     }
     if ((walletStatus === null || walletStatus === void 0 ? void 0 : walletStatus.status) === wallet_interface_1.WalletStatus.BLOCKED) {
         throw new AppError_1.default(http_status_codes_1.default.BAD_REQUEST, "Account blocked");

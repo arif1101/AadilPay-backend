@@ -28,8 +28,8 @@ const getAllTransactions = async() => {
 
 const suspandAgent = async (agentId: string) => {
     const agent = await User.findById(agentId)
-    if(!agent){
-        throw new AppError(httpStatus.NOT_FOUND, "Agent not found")
+    if(!agent || agent?.role !="AGENT"){
+        throw new AppError(httpStatus.NOT_FOUND, "Agent not found. It will be USER")
     }
 
     agent.accountStatus = AccountStatus.SUSPENDED;

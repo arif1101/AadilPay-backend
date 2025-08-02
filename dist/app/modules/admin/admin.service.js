@@ -34,8 +34,8 @@ const getAllTransactions = () => __awaiter(void 0, void 0, void 0, function* () 
 });
 const suspandAgent = (agentId) => __awaiter(void 0, void 0, void 0, function* () {
     const agent = yield user_model_1.User.findById(agentId);
-    if (!agent) {
-        throw new AppError_1.default(http_status_codes_1.default.NOT_FOUND, "Agent not found");
+    if (!agent || (agent === null || agent === void 0 ? void 0 : agent.role) != "AGENT") {
+        throw new AppError_1.default(http_status_codes_1.default.NOT_FOUND, "Agent not found. It will be USER");
     }
     agent.accountStatus = user_interface_1.AccountStatus.SUSPENDED;
     yield agent.save();

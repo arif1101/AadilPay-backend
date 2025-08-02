@@ -10,11 +10,12 @@ interface EnvConfig {
     JWT_ACCESS_EXPIRES: string,
     BCRYPT_SALT_ROUND: string,
     ADMIN_EMAIL: string,
-    ADMIN_PASSWORD: string
+    ADMIN_PASSWORD: string,
+    PHONE : string
 }
 
 const loadEnvVariables = (): EnvConfig => {
-    const requiredEnvVariables: string[] = ["PORT", "DB_URL", "NODE_ENV","BCRYPT_SALT_ROUND", "JWT_ACCESS_EXPIRES", "JWT_ACCESS_SECRET", "ADMIN_EMAIL", "ADMIN_PASSWORD"];
+    const requiredEnvVariables: string[] = ["PORT", "DB_URL", "NODE_ENV","BCRYPT_SALT_ROUND", "JWT_ACCESS_EXPIRES", "JWT_ACCESS_SECRET", "ADMIN_EMAIL", "ADMIN_PASSWORD", "PHONE"];
 
     requiredEnvVariables.forEach(key => {
         if (!process.env[key]) {
@@ -31,7 +32,8 @@ const loadEnvVariables = (): EnvConfig => {
         JWT_ACCESS_SECRET: process.env.JWT_ACCESS_SECRET as string,
         JWT_ACCESS_EXPIRES: process.env.JWT_ACCESS_EXPIRES as string,
         ADMIN_EMAIL: process.env.ADMIN_EMAIL as string,
-        ADMIN_PASSWORD: process.env.ADMIN_PASSWORD as string
+        ADMIN_PASSWORD: process.env.ADMIN_PASSWORD as string,
+        PHONE: process.env.PHONE as string
     }
 }
 
