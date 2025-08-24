@@ -35,11 +35,25 @@ const topUp = catchAsync(async(req: Request, res: Response, next: NextFunction) 
     });
 })
 
+// const withdraw = catchAsync(async(req: Request, res: Response, next: NextFunction) => {
+//     const {amount, agentId} = req.body;
+//     const user = req.user;
+
+//     const result = await WalletServices.withdraw(user, amount, agentId);
+
+//     sendResponse(res, {
+//     statusCode: httpStatus.OK,
+//     success: true,
+//     message: "Withdrawal successful",
+//     data: result,
+//     });
+// })
+
 const withdraw = catchAsync(async(req: Request, res: Response, next: NextFunction) => {
-    const {amount, agentId} = req.body;
+    const {amount, agentNumber} = req.body;
     const user = req.user;
 
-    const result = await WalletServices.withdraw(user, amount, agentId);
+    const result = await WalletServices.withdraw(user, agentNumber, amount);
 
     sendResponse(res, {
     statusCode: httpStatus.OK,
@@ -50,11 +64,26 @@ const withdraw = catchAsync(async(req: Request, res: Response, next: NextFunctio
 })
 
 // transfer or send money 
+// using receiverId and amoun 
+// const sendMoney = catchAsync(async(req: Request, res: Response, next: NextFunction) => {
+//     const {receiverId, amount} = req.body
+//     const sender = req.user
+//     const result = await WalletServices.sendMoney(sender, receiverId, amount)
+
+//     sendResponse(res, {
+//         statusCode: httpStatus.OK,
+//         success: true,
+//         message: "send money successful",
+//         data: result,
+//     });
+// })
+
+// using receiver number and amoun 
 
 const sendMoney = catchAsync(async(req: Request, res: Response, next: NextFunction) => {
-    const {receiverId, amount} = req.body
+    const {receiverNumber, amount} = req.body
     const sender = req.user
-    const result = await WalletServices.sendMoney(sender, receiverId, amount)
+    const result = await WalletServices.sendMoney(sender, receiverNumber, amount)
 
     sendResponse(res, {
         statusCode: httpStatus.OK,

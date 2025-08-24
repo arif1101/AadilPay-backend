@@ -50,7 +50,8 @@ const topUp = async(user : JwtPayload, amount: number) => {
 
 }
 
-const withdraw = async(user: JwtPayload, amount:number, agentId: string) => {
+const withdraw = async(user: JwtPayload, agentNumber: string ,
+    amount:number) => {
     if(amount<=0){
         throw new AppError(httpStatus.BAD_REQUEST, "Invalid withdraw amoun")
     }
@@ -62,13 +63,13 @@ const withdraw = async(user: JwtPayload, amount:number, agentId: string) => {
     }
 
     // check if agent exist and is valid 
-    const agent = await User.findOne({_id: agentId, role: "AGENT"})
+    const agent = await User.findOne({phone: agentNumber, role: "AGENT"})
     if(!agent){
         throw new AppError(httpStatus.BAD_REQUEST, "Agent not found");
     }
 
     // get agent's wallet 
-    const agentWallet = await Wallet.findOne({user: agentId});
+    const agentWallet = await Wallet.findOne({user: agent._id});
     if(!agentWallet){
         throw new AppError(httpStatus.BAD_REQUEST, "Agent wallet not found");
     }
@@ -91,7 +92,7 @@ const withdraw = async(user: JwtPayload, amount:number, agentId: string) => {
             type: TransactionType.WITHDRAW,
             amount,
             status: TransactionStatus.SUCCESS,
-            receiver: agentId
+            receiver: agent._id
         }], {session})
         await session.commitTransaction();
         session.endSession();
@@ -106,23 +107,82 @@ const withdraw = async(user: JwtPayload, amount:number, agentId: string) => {
 }
 
 // send money 
-const sendMoney = async(sender: JwtPayload, receiverId: string, amount: number) => {
-    const user = await User.findById(receiverId)
+// const sendMoney = async(sender: JwtPayload, receiverId: string, amount: number) => {
+//     const user = await User.findById(receiverId)
+//     if (!user || user.role !== Role.USER) {
+//     throw new AppError(httpStatus.BAD_REQUEST, "Send money only to valid users");
+//     }
+    
+//     if(!receiverId || !amount || amount<=0){
+//         throw new AppError(httpStatus.BAD_REQUEST, "Invalid transfer request");
+//     }
+
+//     if(sender.userId.toString() === receiverId){
+//         throw new AppError(httpStatus.BAD_REQUEST, "Cannot transfer to self");
+//     }
+
+//     const [senderWallet, receiverWallet] = await Promise.all([
+//         Wallet.findOne({ user: sender.userId }),
+//         Wallet.findOne({ user: receiverId }),
+//     ]);
+//     if(!senderWallet || senderWallet.balance < amount){
+//         throw new AppError(httpStatus.BAD_REQUEST, "Insufficient balance");
+//     }
+//     if (!receiverWallet) {
+//         throw new AppError(httpStatus.BAD_REQUEST, "Receiver wallet not found");
+//     }
+
+//     const session = await mongoose.startSession();
+//     session.startTransaction();
+
+//     try {
+//         senderWallet.balance -= amount;
+//         receiverWallet.balance += amount;
+
+//         await senderWallet.save({ session });
+//         await receiverWallet.save({ session });
+
+//         await Transaction.create([{
+//             user: sender.userId,
+//             type: TransactionType.TRANSFER,
+//             amount,
+//             status: TransactionStatus.SUCCESS,
+//             receiver: receiverId
+//         }], {session})
+
+//         await session.commitTransaction();
+//         session.endSession();
+
+//         return {
+//         senderWallet,
+//         receiverWallet,
+//         };
+//     } catch (err) {
+//         await session.abortTransaction();
+//         session.endSession();
+//         throw new AppError(httpStatus.INTERNAL_SERVER_ERROR, "Transfer failed");
+//     }
+
+// }
+
+const sendMoney = async(sender: JwtPayload, receiverNumber: string, amount: number) => {
+
+    const user = await User.findOne({phone: receiverNumber})
     if (!user || user.role !== Role.USER) {
     throw new AppError(httpStatus.BAD_REQUEST, "Send money only to valid users");
     }
     
-    if(!receiverId || !amount || amount<=0){
+    if(!receiverNumber || !amount || amount<=0){
         throw new AppError(httpStatus.BAD_REQUEST, "Invalid transfer request");
     }
 
-    if(sender.userId.toString() === receiverId){
+    if(sender.userId.toString() === user._id.toString()){
         throw new AppError(httpStatus.BAD_REQUEST, "Cannot transfer to self");
     }
 
     const [senderWallet, receiverWallet] = await Promise.all([
         Wallet.findOne({ user: sender.userId }),
-        Wallet.findOne({ user: receiverId }),
+        Wallet.findOne({ user: user._id }),
     ]);
     if(!senderWallet || senderWallet.balance < amount){
         throw new AppError(httpStatus.BAD_REQUEST, "Insufficient balance");
@@ -146,7 +206,7 @@ const sendMoney = async(sender: JwtPayload, receiverId: string, amount: number) 
             type: TransactionType.TRANSFER,
             amount,
             status: TransactionStatus.SUCCESS,
-            receiver: receiverId
+            receiver: user._id
         }], {session})
 
         await session.commitTransaction();

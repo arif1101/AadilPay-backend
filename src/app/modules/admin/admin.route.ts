@@ -25,6 +25,10 @@ router.patch("/agents/suspend/:id", checkAuth(Role.ADMIN), adminControllers.susp
 
 router.patch("/agents/approved/:id", checkAuth(Role.ADMIN), adminControllers.approvedAgent)
 
+router.patch("/update", checkAuth(Role.ADMIN), adminControllers.updateAdmin);
+
+router.get("/me", checkAuth(Role.ADMIN), adminControllers.getAdminInfo);
+
 
 
 export const AdminRouter =  router

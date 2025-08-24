@@ -27,8 +27,8 @@ const getAgentTransactions = catchAsync(
 
 const agentCashIn = catchAsync(async(req: Request, res: Response, next: NextFunction) => {
     const agent = req.user; //AGENT
-    const {userId, amount} = req.body
-    const result = await AgentServices.agentCashIn(agent, userId, amount);
+    const {userPhone, amount} = req.body
+    const result = await AgentServices.agentCashIn(agent, userPhone, amount);
 
     sendResponse(res, {
         statusCode: httpStatus.OK,
@@ -41,9 +41,9 @@ const agentCashIn = catchAsync(async(req: Request, res: Response, next: NextFunc
 // Agent → Withdraw money from user's wallet
 export const agentCashOut = catchAsync(async (req, res) => {
   const agent = req.user;
-  const { userId, amount } = req.body;
+  const { userPhone, amount } = req.body;
 
-  const result = await AgentServices.agentCashOut(agent, userId, amount);
+  const result = await AgentServices.agentCashOut(agent, userPhone, amount);
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,

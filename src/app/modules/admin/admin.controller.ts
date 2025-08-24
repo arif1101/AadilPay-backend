@@ -74,11 +74,42 @@ const approvedAgent = catchAsync(async(req: Request, res: Response, next: NextFu
     });
 })
 
+const updateAdmin = catchAsync(async (req: Request, res: Response) => {
+  // get logged in admin from decoded JWT
+  const adminId = req.user.userId;  
+
+  const result = await adminServices.updateAdmin(adminId, req.body);
+
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: "Admin updated successfully",
+    data: result,
+  });
+});
+
+
+const getAdminInfo = catchAsync(async (req: Request, res: Response) => {
+  const adminId = req.user.userId;
+
+  const result = await adminServices.getAdminInfo(adminId);
+
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: "Admin info fetched successfully",
+    data: result,
+  });
+});
+
+
 export const adminControllers = {
     getAllUsers,
     getAllAgents,
     getAllWallets,
     getAllTransactions,
     suspendAgent,
-    approvedAgent
+    approvedAgent,
+    updateAdmin,
+    getAdminInfo
 }

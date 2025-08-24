@@ -7,7 +7,7 @@ import mongoose from "mongoose";
 import { Transaction } from "../transaction/transaction.model";
 import { TransactionType } from "../transaction/transaction.constant";
 import { TransactionStatus } from "../transaction/transaction.interface";
-import { AccountStatus } from "../user/user.interface";
+import { AccountStatus, Role } from "../user/user.interface";
 import { User } from "../user/user.model";
 import { WalletStatus } from "../wallet/wallet.interface";
 
@@ -18,33 +18,39 @@ const getAgentTransactions = async (agentId: string) => {
       { user: agentId },
       { receiver: agentId }
     ]
-  }).sort({ createdAt: -1 });
+  })
+  .populate("user", "name, phone")
+  .populate("receiver", "name, phone")
+  .sort({ createdAt: -1 });
 
   return transactions;
 };
 
-const agentCashIn = async(agent: JwtPayload, userId: string, amount: number) => 
+const agentCashIn = async(agent: JwtPayload, userPhone: string, amount: number) => 
     
     {
-    if(!userId || amount<0) {
+        
+    if(!userPhone || amount<0) {
         throw new AppError(httpStatus.BAD_REQUEST, "Invalid input");
     }
     
-    const accountStatus = await User.findById(agent.userId)
-    const walletStatus = await Wallet.findOne({user: userId})
-
-    
-    if(accountStatus?.accountStatus === AccountStatus.SUSPENDED){
+    const agentAccount = await User.findById(agent.userId)
+    if(agentAccount?.accountStatus === AccountStatus.SUSPENDED){
         throw new AppError(httpStatus.BAD_REQUEST, "Account suspended")
     }
     
-    if(walletStatus?.status === WalletStatus.BLOCKED){
-        throw new AppError(httpStatus.BAD_REQUEST, "Account blocked")
+    const user = await User.findOne({phone: userPhone, role: Role.USER})
+    if (!user) {
+        throw new AppError(httpStatus.NOT_FOUND, "User not found");
+    }
+    
+    if (user.accountStatus === AccountStatus.SUSPENDED) {
+        throw new AppError(httpStatus.BAD_REQUEST, "User account suspended");
     }
     
     const [agentWallet, userWallet] = await Promise.all([
         Wallet.findOne({user: agent.userId}),
-        Wallet.findOne({user: userId})
+        Wallet.findOne({user: user._id})
     ])
     if(!agentWallet || agentWallet.balance < amount){
         throw new AppError(httpStatus.BAD_REQUEST, "Agent has insufficient balance");
@@ -52,6 +58,10 @@ const agentCashIn = async(agent: JwtPayload, userId: string, amount: number) =>
 
     if(!userWallet){
         throw new AppError(httpStatus.NOT_FOUND, "User wallet not found");
+    }
+
+    if (userWallet.status === WalletStatus.BLOCKED) {
+        throw new AppError(httpStatus.BAD_REQUEST, "User wallet is blocked");
     }
 
     const session = await mongoose.startSession();
@@ -63,10 +73,9 @@ const agentCashIn = async(agent: JwtPayload, userId: string, amount: number) =>
 
         await agentWallet.save({session});
         await userWallet.save({session});
-        console.log(agent.userId, userId)//ok
         await Transaction.create([{
             user: agent.userId,
-            receiver: userId,
+            receiver: user._id,
             type: TransactionType.CASH_IN,
             amount,
             status: TransactionStatus.SUCCESS
@@ -82,18 +91,26 @@ const agentCashIn = async(agent: JwtPayload, userId: string, amount: number) =>
     
 }
 
-const agentCashOut = async(agent: JwtPayload, userId: string, amount: number) => {
+const agentCashOut = async(agent: JwtPayload, userPhone: string, amount: number) => {
     
-    if(!userId || amount<0 || agent.userId.toString() === userId){
-        throw new AppError(httpStatus.BAD_REQUEST, "Invalid input: User ID or amount incorrect");
+    if(!userPhone || amount<0){
+        throw new AppError(httpStatus.BAD_REQUEST, "Invalid input: user phone or amount incorrect");
     }
 
+    // find user by phone
+    const user = await User.findOne({ phone: userPhone, role: Role.USER });
+    if (!user) {
+        throw new AppError(httpStatus.NOT_FOUND, "User not found");
+    }
 
-    
+    if (agent.userId.toString() === user._id.toString()) {
+        throw new AppError(httpStatus.BAD_REQUEST, "Agent and user cannot be the same");
+    }
+
     const [agentAccount, agentWallet, userWallet] = await Promise.all([
         User.findById(agent.userId),
         Wallet.findOne({ user: agent.userId }),
-        Wallet.findOne({ user: userId })
+        Wallet.findOne({ user: user._id })
     ]);
 
     if (!userWallet) {
@@ -116,14 +133,16 @@ const agentCashOut = async(agent: JwtPayload, userId: string, amount: number) =>
     session.startTransaction();
 
     try {
+        // deduct from user
         userWallet.balance -= amount;
-        agentWallet.balance += amount;
-
         await userWallet.save({ session });
+
+        // add to agent
+        agentWallet.balance += amount;
         await agentWallet.save({ session });
 
         await Transaction.create([{
-            user: userId,
+            user: user._id,
             receiver: agent.userId,
             type: TransactionType.CASH_OUT,
             amount,
