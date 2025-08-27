@@ -28,6 +28,22 @@ const credentialsLogin = (0, catchAsync_1.catchAsync)((req, res, next) => __awai
         data: loginInfo,
     });
 }));
+const logout = (0, catchAsync_1.catchAsync)((req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    res.clearCookie("accessToken", {
+        httpOnly: true,
+        // secure: envVars.NODE_ENV === "production", // match login
+        secure: true,
+        sameSite: "none",
+        path: "/",
+    });
+    (0, sendResponse_1.sendResponse)(res, {
+        success: true,
+        statusCode: http_status_codes_1.default.OK,
+        message: "User Logged Out Successfully",
+        data: null,
+    });
+}));
 exports.AuthControllers = {
-    credentialsLogin
+    credentialsLogin,
+    logout
 };

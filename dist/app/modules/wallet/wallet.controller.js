@@ -38,10 +38,21 @@ const topUp = (0, catchAsync_1.catchAsync)((req, res, next) => __awaiter(void 0,
         data: result,
     });
 }));
+// const withdraw = catchAsync(async(req: Request, res: Response, next: NextFunction) => {
+//     const {amount, agentId} = req.body;
+//     const user = req.user;
+//     const result = await WalletServices.withdraw(user, amount, agentId);
+//     sendResponse(res, {
+//     statusCode: httpStatus.OK,
+//     success: true,
+//     message: "Withdrawal successful",
+//     data: result,
+//     });
+// })
 const withdraw = (0, catchAsync_1.catchAsync)((req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    const { amount, agentId } = req.body;
+    const { amount, agentNumber } = req.body;
     const user = req.user;
-    const result = yield wallet_service_1.WalletServices.withdraw(user, amount, agentId);
+    const result = yield wallet_service_1.WalletServices.withdraw(user, agentNumber, amount);
     (0, sendResponse_1.sendResponse)(res, {
         statusCode: http_status_codes_1.default.OK,
         success: true,
@@ -50,10 +61,23 @@ const withdraw = (0, catchAsync_1.catchAsync)((req, res, next) => __awaiter(void
     });
 }));
 // transfer or send money 
+// using receiverId and amoun 
+// const sendMoney = catchAsync(async(req: Request, res: Response, next: NextFunction) => {
+//     const {receiverId, amount} = req.body
+//     const sender = req.user
+//     const result = await WalletServices.sendMoney(sender, receiverId, amount)
+//     sendResponse(res, {
+//         statusCode: httpStatus.OK,
+//         success: true,
+//         message: "send money successful",
+//         data: result,
+//     });
+// })
+// using receiver number and amoun 
 const sendMoney = (0, catchAsync_1.catchAsync)((req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    const { receiverId, amount } = req.body;
+    const { receiverNumber, amount } = req.body;
     const sender = req.user;
-    const result = yield wallet_service_1.WalletServices.sendMoney(sender, receiverId, amount);
+    const result = yield wallet_service_1.WalletServices.sendMoney(sender, receiverNumber, amount);
     (0, sendResponse_1.sendResponse)(res, {
         statusCode: http_status_codes_1.default.OK,
         success: true,

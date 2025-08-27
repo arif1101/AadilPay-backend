@@ -18,7 +18,10 @@ const MyTransaction = (userId) => __awaiter(void 0, void 0, void 0, function* ()
             { receiver: userId },
             { user: userId }
         ]
-    }).sort({ createdAt: -1 });
+    })
+        .populate('user', 'name')
+        .populate('receiver', 'name')
+        .sort({ createdAt: -1 });
     return transaction;
 });
 exports.TransactionServices = {

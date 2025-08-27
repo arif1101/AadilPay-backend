@@ -75,11 +75,34 @@ const approvedAgent = (0, catchAsync_1.catchAsync)((req, res, next) => __awaiter
         data: result,
     });
 }));
+const updateAdmin = (0, catchAsync_1.catchAsync)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    // get logged in admin from decoded JWT
+    const adminId = req.user.userId;
+    const result = yield admin_service_1.adminServices.updateAdmin(adminId, req.body);
+    (0, sendResponse_1.sendResponse)(res, {
+        statusCode: 200,
+        success: true,
+        message: "Admin updated successfully",
+        data: result,
+    });
+}));
+const getAdminInfo = (0, catchAsync_1.catchAsync)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const adminId = req.user.userId;
+    const result = yield admin_service_1.adminServices.getAdminInfo(adminId);
+    (0, sendResponse_1.sendResponse)(res, {
+        statusCode: 200,
+        success: true,
+        message: "Admin info fetched successfully",
+        data: result,
+    });
+}));
 exports.adminControllers = {
     getAllUsers,
     getAllAgents,
     getAllWallets,
     getAllTransactions: exports.getAllTransactions,
     suspendAgent,
-    approvedAgent
+    approvedAgent,
+    updateAdmin,
+    getAdminInfo
 };

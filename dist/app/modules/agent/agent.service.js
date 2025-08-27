@@ -29,30 +29,39 @@ const getAgentTransactions = (agentId) => __awaiter(void 0, void 0, void 0, func
             { user: agentId },
             { receiver: agentId }
         ]
-    }).sort({ createdAt: -1 });
+    })
+        .populate("user", "name phone")
+        .populate("receiver", "name phone")
+        .sort({ createdAt: -1 });
     return transactions;
 });
-const agentCashIn = (agent, userId, amount) => __awaiter(void 0, void 0, void 0, function* () {
-    if (!userId || amount < 0) {
+const agentCashIn = (agent, userPhone, amount) => __awaiter(void 0, void 0, void 0, function* () {
+    if (!userPhone || amount < 0) {
         throw new AppError_1.default(http_status_codes_1.default.BAD_REQUEST, "Invalid input");
     }
-    const accountStatus = yield user_model_1.User.findById(agent.userId);
-    const walletStatus = yield wallet_mode_1.Wallet.findOne({ user: userId });
-    if ((accountStatus === null || accountStatus === void 0 ? void 0 : accountStatus.accountStatus) === user_interface_1.AccountStatus.SUSPENDED) {
+    const agentAccount = yield user_model_1.User.findById(agent.userId);
+    if ((agentAccount === null || agentAccount === void 0 ? void 0 : agentAccount.accountStatus) === user_interface_1.AccountStatus.SUSPENDED) {
         throw new AppError_1.default(http_status_codes_1.default.BAD_REQUEST, "Account suspended");
     }
-    if ((walletStatus === null || walletStatus === void 0 ? void 0 : walletStatus.status) === wallet_interface_1.WalletStatus.BLOCKED) {
-        throw new AppError_1.default(http_status_codes_1.default.BAD_REQUEST, "Account blocked");
+    const user = yield user_model_1.User.findOne({ phone: userPhone, role: user_interface_1.Role.USER });
+    if (!user) {
+        throw new AppError_1.default(http_status_codes_1.default.NOT_FOUND, "User not found");
+    }
+    if (user.accountStatus === user_interface_1.AccountStatus.SUSPENDED) {
+        throw new AppError_1.default(http_status_codes_1.default.BAD_REQUEST, "User account suspended");
     }
     const [agentWallet, userWallet] = yield Promise.all([
         wallet_mode_1.Wallet.findOne({ user: agent.userId }),
-        wallet_mode_1.Wallet.findOne({ user: userId })
+        wallet_mode_1.Wallet.findOne({ user: user._id })
     ]);
     if (!agentWallet || agentWallet.balance < amount) {
         throw new AppError_1.default(http_status_codes_1.default.BAD_REQUEST, "Agent has insufficient balance");
     }
     if (!userWallet) {
         throw new AppError_1.default(http_status_codes_1.default.NOT_FOUND, "User wallet not found");
+    }
+    if (userWallet.status === wallet_interface_1.WalletStatus.BLOCKED) {
+        throw new AppError_1.default(http_status_codes_1.default.BAD_REQUEST, "User wallet is blocked");
     }
     const session = yield mongoose_1.default.startSession();
     session.startTransaction();
@@ -61,10 +70,9 @@ const agentCashIn = (agent, userId, amount) => __awaiter(void 0, void 0, void 0,
         userWallet.balance += amount;
         yield agentWallet.save({ session });
         yield userWallet.save({ session });
-        console.log(agent.userId, userId); //ok
         yield transaction_model_1.Transaction.create([{
                 user: agent.userId,
-                receiver: userId,
+                receiver: user._id,
                 type: transaction_constant_1.TransactionType.CASH_IN,
                 amount,
                 status: transaction_interface_1.TransactionStatus.SUCCESS
@@ -79,14 +87,22 @@ const agentCashIn = (agent, userId, amount) => __awaiter(void 0, void 0, void 0,
         throw new AppError_1.default(http_status_codes_1.default.INTERNAL_SERVER_ERROR, "Cash-in failed");
     }
 });
-const agentCashOut = (agent, userId, amount) => __awaiter(void 0, void 0, void 0, function* () {
-    if (!userId || amount < 0 || agent.userId.toString() === userId) {
-        throw new AppError_1.default(http_status_codes_1.default.BAD_REQUEST, "Invalid input: User ID or amount incorrect");
+const agentCashOut = (agent, userPhone, amount) => __awaiter(void 0, void 0, void 0, function* () {
+    if (!userPhone || amount < 0) {
+        throw new AppError_1.default(http_status_codes_1.default.BAD_REQUEST, "Invalid input: user phone or amount incorrect");
+    }
+    // find user by phone
+    const user = yield user_model_1.User.findOne({ phone: userPhone, role: user_interface_1.Role.USER });
+    if (!user) {
+        throw new AppError_1.default(http_status_codes_1.default.NOT_FOUND, "User not found");
+    }
+    if (agent.userId.toString() === user._id.toString()) {
+        throw new AppError_1.default(http_status_codes_1.default.BAD_REQUEST, "Agent and user cannot be the same");
     }
     const [agentAccount, agentWallet, userWallet] = yield Promise.all([
         user_model_1.User.findById(agent.userId),
         wallet_mode_1.Wallet.findOne({ user: agent.userId }),
-        wallet_mode_1.Wallet.findOne({ user: userId })
+        wallet_mode_1.Wallet.findOne({ user: user._id })
     ]);
     if (!userWallet) {
         throw new AppError_1.default(http_status_codes_1.default.BAD_REQUEST, "User wallet not found");
@@ -106,12 +122,14 @@ const agentCashOut = (agent, userId, amount) => __awaiter(void 0, void 0, void 0
     const session = yield mongoose_1.default.startSession();
     session.startTransaction();
     try {
+        // deduct from user
         userWallet.balance -= amount;
-        agentWallet.balance += amount;
         yield userWallet.save({ session });
+        // add to agent
+        agentWallet.balance += amount;
         yield agentWallet.save({ session });
         yield transaction_model_1.Transaction.create([{
-                user: userId,
+                user: user._id,
                 receiver: agent.userId,
                 type: transaction_constant_1.TransactionType.CASH_OUT,
                 amount,
@@ -127,8 +145,36 @@ const agentCashOut = (agent, userId, amount) => __awaiter(void 0, void 0, void 0
         throw new AppError_1.default(http_status_codes_1.default.INTERNAL_SERVER_ERROR, "Cash-out failed");
     }
 });
+// const updateAgent = async (userId: string, payload: Partial<IUser>, decodedToken: JwtPayload) => {
+//     const isUserExist = await User.findById(userId);
+//     if(!isUserExist) {
+//         throw new AppError(httpStatus.NOT_FOUND, "User not found")
+//     }
+//     if(payload.role){
+//         if(decodedToken.role === Role.USER || decodedToken.role === Role.AGENT){
+//             throw new AppError(httpStatus.FORBIDDEN, "Your are not authorized")
+//         }
+//     }
+//     if(payload.accountStatus || payload.commissionRate || payload.status) {
+//         if(decodedToken.role === Role.USER || decodedToken.role === Role.AGENT){
+//             throw new AppError(httpStatus.FORBIDDEN, "Your are not authorized")
+//         }
+//     }
+//     if (payload.password) {
+//         payload.password = await bcryptjs.hash(payload.password, Number(envVars.BCRYPT_SALT_ROUND))
+//     }
+//     if(payload.phone){
+//         const phoneRegex = /^01[0-9]{9}$/;
+//         if(!phoneRegex.test(payload.phone)){
+//             throw new AppError(httpStatus.BAD_REQUEST, 'Invalid phone number format')
+//         }
+//     }
+//     const newUpdateduser = await User.findByIdAndUpdate(userId, payload, {new: true, runValidators: true})
+//     return newUpdateduser
+// }
 exports.AgentServices = {
     agentCashIn,
     agentCashOut,
-    getAgentTransactions
+    getAgentTransactions,
+    // updateAgent
 };

@@ -20,7 +20,7 @@ const user_model_1 = require("../modules/user/user.model");
 const jwt_1 = require("../utils/jwt");
 const checkAuth = (...authRoles) => (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const accessToken = req.headers.authorization;
+        const accessToken = req.cookies.accessToken || req.headers.authorization;
         if (!accessToken) {
             throw new AppError_1.default(403, "No Token Recieved");
         }

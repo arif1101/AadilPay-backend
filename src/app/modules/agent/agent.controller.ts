@@ -5,6 +5,8 @@ import { sendResponse } from "../../utils/sendResponse";
 import httpStatus from "http-status-codes"
 import { AgentServices } from "./agent.service";
 import { Transaction } from "../transaction/transaction.model";
+import { JwtPayload } from "jsonwebtoken";
+import AppError from "../../errorHelpers/AppError";
 
 
 
@@ -51,6 +53,28 @@ export const agentCashOut = catchAsync(async (req, res) => {
     data: result,
   });
 });
+
+
+// const updateUser = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+//   const verifiedToken = req.user as JwtPayload;
+
+//   const userId = verifiedToken?.userId;
+
+//   if (!userId) {
+//     throw new AppError(httpStatus.UNAUTHORIZED, "Invalid user information");
+//   }
+
+//   const payload = req.body;
+
+//   const updateUser = await AgentServices.updateAgent(userId, payload, verifiedToken);
+
+//   sendResponse(res, {
+//     success: true,
+//     statusCode: httpStatus.OK,
+//     message: "User updated successfully",
+//     data: updateUser,
+//   });
+// });
 
 
 export const AgentControllers = {

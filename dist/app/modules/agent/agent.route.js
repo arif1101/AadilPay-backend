@@ -8,4 +8,5 @@ const router = (0, express_1.Router)();
 router.get('/transactions', (0, checkAuth_1.checkAuth)('AGENT'), agent_controller_1.AgentControllers.getAgentTransactions);
 router.post("/cash-in", (0, checkAuth_1.checkAuth)("AGENT"), agent_controller_1.AgentControllers.agentCashIn);
 router.post("/cash-out", (0, checkAuth_1.checkAuth)("AGENT"), agent_controller_1.agentCashOut);
+// router.patch('/update', checkAuth(...Object.values(Role)) ,UserControllers.updateUser);
 exports.AgentRoutes = router;

@@ -15,4 +15,6 @@ router.patch("/wallet/active/:id", (0, checkAuth_1.checkAuth)(user_interface_1.R
 router.patch("/wallet/block/:id", (0, checkAuth_1.checkAuth)(user_interface_1.Role.ADMIN), wallet_controller_1.WalletControllers.blockWallet);
 router.patch("/agents/suspend/:id", (0, checkAuth_1.checkAuth)(user_interface_1.Role.ADMIN), admin_controller_1.adminControllers.suspendAgent);
 router.patch("/agents/approved/:id", (0, checkAuth_1.checkAuth)(user_interface_1.Role.ADMIN), admin_controller_1.adminControllers.approvedAgent);
+router.patch("/update", (0, checkAuth_1.checkAuth)(user_interface_1.Role.ADMIN), admin_controller_1.adminControllers.updateAdmin);
+router.get("/me", (0, checkAuth_1.checkAuth)(user_interface_1.Role.ADMIN), admin_controller_1.adminControllers.getAdminInfo);
 exports.AdminRouter = router;

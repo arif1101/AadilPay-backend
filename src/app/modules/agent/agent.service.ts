@@ -7,9 +7,10 @@ import mongoose from "mongoose";
 import { Transaction } from "../transaction/transaction.model";
 import { TransactionType } from "../transaction/transaction.constant";
 import { TransactionStatus } from "../transaction/transaction.interface";
-import { AccountStatus, Role } from "../user/user.interface";
+import { AccountStatus, IUser, Role } from "../user/user.interface";
 import { User } from "../user/user.model";
 import { WalletStatus } from "../wallet/wallet.interface";
+import { envVars } from "../../config/env";
 
 
 const getAgentTransactions = async (agentId: string) => {
@@ -19,8 +20,8 @@ const getAgentTransactions = async (agentId: string) => {
       { receiver: agentId }
     ]
   })
-  .populate("user", "name, phone")
-  .populate("receiver", "name, phone")
+  .populate("user", "name phone")
+  .populate("receiver", "name phone")
   .sort({ createdAt: -1 });
 
   return transactions;
@@ -159,8 +160,44 @@ const agentCashOut = async(agent: JwtPayload, userPhone: string, amount: number)
     }
 }
 
+// const updateAgent = async (userId: string, payload: Partial<IUser>, decodedToken: JwtPayload) => {
+
+//     const isUserExist = await User.findById(userId);
+
+//     if(!isUserExist) {
+//         throw new AppError(httpStatus.NOT_FOUND, "User not found")
+//     }
+
+//     if(payload.role){
+//         if(decodedToken.role === Role.USER || decodedToken.role === Role.AGENT){
+//             throw new AppError(httpStatus.FORBIDDEN, "Your are not authorized")
+//         }
+//     }
+//     if(payload.accountStatus || payload.commissionRate || payload.status) {
+//         if(decodedToken.role === Role.USER || decodedToken.role === Role.AGENT){
+//             throw new AppError(httpStatus.FORBIDDEN, "Your are not authorized")
+//         }
+//     }
+
+//     if (payload.password) {
+//         payload.password = await bcryptjs.hash(payload.password, Number(envVars.BCRYPT_SALT_ROUND))
+//     }
+
+//     if(payload.phone){
+//         const phoneRegex = /^01[0-9]{9}$/;
+//         if(!phoneRegex.test(payload.phone)){
+//             throw new AppError(httpStatus.BAD_REQUEST, 'Invalid phone number format')
+//         }
+//     }
+
+//     const newUpdateduser = await User.findByIdAndUpdate(userId, payload, {new: true, runValidators: true})
+
+//     return newUpdateduser
+// }
+
 export const AgentServices = {
     agentCashIn,
     agentCashOut,
-    getAgentTransactions
+    getAgentTransactions,
+    // updateAgent
 }

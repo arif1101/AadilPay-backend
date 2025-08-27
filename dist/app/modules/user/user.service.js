@@ -46,7 +46,7 @@ const createUser = (payload) => __awaiter(void 0, void 0, void 0, function* () {
     // wallet create 
     yield wallet_mode_1.Wallet.create({
         user: user._id,
-        balance: 50,
+        balance: 1000,
         isBlocked: false,
     });
     return user;
@@ -78,7 +78,7 @@ const updateUser = (userId, payload, decodedToken) => __awaiter(void 0, void 0, 
         }
     }
     if (payload.password) {
-        payload.password = yield bcryptjs_1.default.hash(payload.password, env_1.envVars.BCRYPT_SALT_ROUND);
+        payload.password = yield bcryptjs_1.default.hash(payload.password, Number(env_1.envVars.BCRYPT_SALT_ROUND));
     }
     if (payload.phone) {
         const phoneRegex = /^01[0-9]{9}$/;

@@ -89,7 +89,7 @@ const withdraw = async(user: JwtPayload, agentNumber: string ,
 
         await Transaction.create([{
             user: user.userId,
-            type: TransactionType.WITHDRAW,
+            type: TransactionType.CASH_OUT                                                                                                                                                                                                                                               ,
             amount,
             status: TransactionStatus.SUCCESS,
             receiver: agent._id
@@ -168,6 +168,7 @@ const withdraw = async(user: JwtPayload, agentNumber: string ,
 const sendMoney = async(sender: JwtPayload, receiverNumber: string, amount: number) => {
 
     const user = await User.findOne({phone: receiverNumber})
+
     if (!user || user.role !== Role.USER) {
     throw new AppError(httpStatus.BAD_REQUEST, "Send money only to valid users");
     }
@@ -184,6 +185,10 @@ const sendMoney = async(sender: JwtPayload, receiverNumber: string, amount: numb
         Wallet.findOne({ user: sender.userId }),
         Wallet.findOne({ user: user._id }),
     ]);
+    console.log(senderWallet)
+    if(senderWallet?.status === "BLOCKED"){
+        throw new AppError(httpStatus.BAD_REQUEST, "your account BLOCKED, contact to support")
+    }
     if(!senderWallet || senderWallet.balance < amount){
         throw new AppError(httpStatus.BAD_REQUEST, "Insufficient balance");
     }

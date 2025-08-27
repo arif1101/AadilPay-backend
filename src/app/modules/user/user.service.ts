@@ -34,7 +34,7 @@ const createUser = async (payload: Partial<IUser>) => {
     // wallet create 
     await Wallet.create({
         user: user._id,
-        balance: 50,
+        balance: 1000,
         isBlocked: false,
     })
     
@@ -75,7 +75,7 @@ const updateUser = async (userId: string, payload: Partial<IUser>, decodedToken:
     }
 
     if (payload.password) {
-        payload.password = await bcryptjs.hash(payload.password, envVars.BCRYPT_SALT_ROUND)
+        payload.password = await bcryptjs.hash(payload.password, Number(envVars.BCRYPT_SALT_ROUND))
     }
 
     if(payload.phone){

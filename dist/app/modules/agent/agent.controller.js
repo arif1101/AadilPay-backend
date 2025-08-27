@@ -29,8 +29,8 @@ const getAgentTransactions = (0, catchAsync_1.catchAsync)((req, res) => __awaite
 }));
 const agentCashIn = (0, catchAsync_1.catchAsync)((req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     const agent = req.user; //AGENT
-    const { userId, amount } = req.body;
-    const result = yield agent_service_1.AgentServices.agentCashIn(agent, userId, amount);
+    const { userPhone, amount } = req.body;
+    const result = yield agent_service_1.AgentServices.agentCashIn(agent, userPhone, amount);
     (0, sendResponse_1.sendResponse)(res, {
         statusCode: http_status_codes_1.default.OK,
         success: true,
@@ -41,8 +41,8 @@ const agentCashIn = (0, catchAsync_1.catchAsync)((req, res, next) => __awaiter(v
 // Agent → Withdraw money from user's wallet
 exports.agentCashOut = (0, catchAsync_1.catchAsync)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const agent = req.user;
-    const { userId, amount } = req.body;
-    const result = yield agent_service_1.AgentServices.agentCashOut(agent, userId, amount);
+    const { userPhone, amount } = req.body;
+    const result = yield agent_service_1.AgentServices.agentCashOut(agent, userPhone, amount);
     (0, sendResponse_1.sendResponse)(res, {
         statusCode: http_status_codes_1.default.OK,
         success: true,
@@ -50,6 +50,21 @@ exports.agentCashOut = (0, catchAsync_1.catchAsync)((req, res) => __awaiter(void
         data: result,
     });
 }));
+// const updateUser = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+//   const verifiedToken = req.user as JwtPayload;
+//   const userId = verifiedToken?.userId;
+//   if (!userId) {
+//     throw new AppError(httpStatus.UNAUTHORIZED, "Invalid user information");
+//   }
+//   const payload = req.body;
+//   const updateUser = await AgentServices.updateAgent(userId, payload, verifiedToken);
+//   sendResponse(res, {
+//     success: true,
+//     statusCode: httpStatus.OK,
+//     message: "User updated successfully",
+//     data: updateUser,
+//   });
+// });
 exports.AgentControllers = {
     agentCashIn,
     agentCashOut: exports.agentCashOut,

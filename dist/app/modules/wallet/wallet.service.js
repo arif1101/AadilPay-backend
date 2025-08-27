@@ -52,7 +52,7 @@ const topUp = (user, amount) => __awaiter(void 0, void 0, void 0, function* () {
     });
     return wallet;
 });
-const withdraw = (user, amount, agentId) => __awaiter(void 0, void 0, void 0, function* () {
+const withdraw = (user, agentNumber, amount) => __awaiter(void 0, void 0, void 0, function* () {
     if (amount <= 0) {
         throw new AppError_1.default(http_status_codes_1.default.BAD_REQUEST, "Invalid withdraw amoun");
     }
@@ -62,12 +62,12 @@ const withdraw = (user, amount, agentId) => __awaiter(void 0, void 0, void 0, fu
         throw new AppError_1.default(http_status_codes_1.default.BAD_REQUEST, "Insufficient balance");
     }
     // check if agent exist and is valid 
-    const agent = yield user_model_1.User.findOne({ _id: agentId, role: "AGENT" });
+    const agent = yield user_model_1.User.findOne({ phone: agentNumber, role: "AGENT" });
     if (!agent) {
         throw new AppError_1.default(http_status_codes_1.default.BAD_REQUEST, "Agent not found");
     }
     // get agent's wallet 
-    const agentWallet = yield wallet_mode_1.Wallet.findOne({ user: agentId });
+    const agentWallet = yield wallet_mode_1.Wallet.findOne({ user: agent._id });
     if (!agentWallet) {
         throw new AppError_1.default(http_status_codes_1.default.BAD_REQUEST, "Agent wallet not found");
     }
@@ -82,10 +82,10 @@ const withdraw = (user, amount, agentId) => __awaiter(void 0, void 0, void 0, fu
         yield agentWallet.save({ session });
         yield transaction_model_1.Transaction.create([{
                 user: user.userId,
-                type: transaction_constant_1.TransactionType.WITHDRAW,
+                type: transaction_constant_1.TransactionType.CASH_OUT,
                 amount,
                 status: transaction_interface_1.TransactionStatus.SUCCESS,
-                receiver: agentId
+                receiver: agent._id
             }], { session });
         yield session.commitTransaction();
         session.endSession();
@@ -99,21 +99,72 @@ const withdraw = (user, amount, agentId) => __awaiter(void 0, void 0, void 0, fu
     }
 });
 // send money 
-const sendMoney = (sender, receiverId, amount) => __awaiter(void 0, void 0, void 0, function* () {
-    const user = yield user_model_1.User.findById(receiverId);
+// const sendMoney = async(sender: JwtPayload, receiverId: string, amount: number) => {
+//     const user = await User.findById(receiverId)
+//     if (!user || user.role !== Role.USER) {
+//     throw new AppError(httpStatus.BAD_REQUEST, "Send money only to valid users");
+//     }
+//     if(!receiverId || !amount || amount<=0){
+//         throw new AppError(httpStatus.BAD_REQUEST, "Invalid transfer request");
+//     }
+//     if(sender.userId.toString() === receiverId){
+//         throw new AppError(httpStatus.BAD_REQUEST, "Cannot transfer to self");
+//     }
+//     const [senderWallet, receiverWallet] = await Promise.all([
+//         Wallet.findOne({ user: sender.userId }),
+//         Wallet.findOne({ user: receiverId }),
+//     ]);
+//     if(!senderWallet || senderWallet.balance < amount){
+//         throw new AppError(httpStatus.BAD_REQUEST, "Insufficient balance");
+//     }
+//     if (!receiverWallet) {
+//         throw new AppError(httpStatus.BAD_REQUEST, "Receiver wallet not found");
+//     }
+//     const session = await mongoose.startSession();
+//     session.startTransaction();
+//     try {
+//         senderWallet.balance -= amount;
+//         receiverWallet.balance += amount;
+//         await senderWallet.save({ session });
+//         await receiverWallet.save({ session });
+//         await Transaction.create([{
+//             user: sender.userId,
+//             type: TransactionType.TRANSFER,
+//             amount,
+//             status: TransactionStatus.SUCCESS,
+//             receiver: receiverId
+//         }], {session})
+//         await session.commitTransaction();
+//         session.endSession();
+//         return {
+//         senderWallet,
+//         receiverWallet,
+//         };
+//     } catch (err) {
+//         await session.abortTransaction();
+//         session.endSession();
+//         throw new AppError(httpStatus.INTERNAL_SERVER_ERROR, "Transfer failed");
+//     }
+// }
+const sendMoney = (sender, receiverNumber, amount) => __awaiter(void 0, void 0, void 0, function* () {
+    const user = yield user_model_1.User.findOne({ phone: receiverNumber });
     if (!user || user.role !== user_interface_1.Role.USER) {
         throw new AppError_1.default(http_status_codes_1.default.BAD_REQUEST, "Send money only to valid users");
     }
-    if (!receiverId || !amount || amount <= 0) {
+    if (!receiverNumber || !amount || amount <= 0) {
         throw new AppError_1.default(http_status_codes_1.default.BAD_REQUEST, "Invalid transfer request");
     }
-    if (sender.userId.toString() === receiverId) {
+    if (sender.userId.toString() === user._id.toString()) {
         throw new AppError_1.default(http_status_codes_1.default.BAD_REQUEST, "Cannot transfer to self");
     }
     const [senderWallet, receiverWallet] = yield Promise.all([
         wallet_mode_1.Wallet.findOne({ user: sender.userId }),
-        wallet_mode_1.Wallet.findOne({ user: receiverId }),
+        wallet_mode_1.Wallet.findOne({ user: user._id }),
     ]);
+    console.log(senderWallet);
+    if ((senderWallet === null || senderWallet === void 0 ? void 0 : senderWallet.status) === "BLOCKED") {
+        throw new AppError_1.default(http_status_codes_1.default.BAD_REQUEST, "your account BLOCKED, contact to support");
+    }
     if (!senderWallet || senderWallet.balance < amount) {
         throw new AppError_1.default(http_status_codes_1.default.BAD_REQUEST, "Insufficient balance");
     }
@@ -132,7 +183,7 @@ const sendMoney = (sender, receiverId, amount) => __awaiter(void 0, void 0, void
                 type: transaction_constant_1.TransactionType.TRANSFER,
                 amount,
                 status: transaction_interface_1.TransactionStatus.SUCCESS,
-                receiver: receiverId
+                receiver: user._id
             }], { session });
         yield session.commitTransaction();
         session.endSession();
