@@ -9,7 +9,10 @@ const MyTransaction = async(userId: string) => {
             {receiver: userId},
             {user: userId}
         ]
-    }).sort({createdAt: -1})
+    })
+    .populate('user', 'name')
+    .populate('receiver','name')
+    .sort({createdAt: -1})
 
     return transaction
 }

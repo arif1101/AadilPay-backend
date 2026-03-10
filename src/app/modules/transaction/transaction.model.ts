@@ -12,7 +12,7 @@ const transactionSchema = new Schema<ITransaction>(
       required: true
     },
     type: {
-      type: String,
+    type: String,
       enum: TransactionTypes,
       required: true
     },

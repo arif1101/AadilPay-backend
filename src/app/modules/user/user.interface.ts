@@ -11,6 +11,11 @@ export enum UserStatus {
     BLOCKED = "BLOCKED"
 }
 
+export enum AccountStatus {
+    APPROVED = "APPROVED",
+    SUSPENDED = "SUSPENDED"
+}
+
 export interface IUser {
     name: string;
     email?: string;
@@ -18,7 +23,7 @@ export interface IUser {
     password: string;
     role?: Role;
     walletId?: Schema.Types.ObjectId;
-    isApproved?: boolean;
+    accountStatus?: AccountStatus;
     status?: UserStatus;
     commissionRate?: Date;
     updatedAt?:Date;

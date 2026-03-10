@@ -9,7 +9,7 @@ import { verifyToken } from "../utils/jwt";
 
 export const checkAuth = (...authRoles: string[]) => async(req: Request, res: Response, next: NextFunction) => {
     try{
-        const accessToken = req.headers.authorization;
+        const accessToken = req.cookies.accessToken|| req.headers.authorization;
         if(!accessToken){
             throw new AppError(403, "No Token Recieved")
         }
@@ -25,7 +25,6 @@ export const checkAuth = (...authRoles: string[]) => async(req: Request, res: Re
         if(!authRoles.includes(verifiedToken.role)){
             throw new AppError(403, "You are not permitted to view this route!!")
         }
-        console.log("verified token : ",verifiedToken)
         req.user = verifiedToken
         next()
         

@@ -14,6 +14,10 @@ const createUser = async (payload: Partial<IUser>) => {
 
     const isUserExist = await User.findOne({phone})
 
+    if(payload.role === Role.ADMIN){
+        throw new AppError(httpStatus.BAD_REQUEST, "Your cannot create ADMIN") 
+    }
+
     if(isUserExist) {
         throw new AppError(httpStatus.BAD_REQUEST, "User Already Exist")
     }
@@ -30,21 +34,28 @@ const createUser = async (payload: Partial<IUser>) => {
     // wallet create 
     await Wallet.create({
         user: user._id,
-        balance: 50,
+        balance: 1000,
         isBlocked: false,
     })
     
     return user
 }
 
-export const getMyProfile = async (userId: string) => {
+const getMyProfile = async (userId: string) => {
   const user = await User.findById(userId).select('-password');
-  return user;
+  if(!user){
+    throw new Error('User not found');
+  }
+
+  const wallet = await Wallet.findOne({user: userId})
+  
+  return {
+    user,
+    wallet
+  }
 };
 
-export const updateUser = async (userId: string, payload: Partial<IUser>, decodedToken: JwtPayload) => {
-
-    console.log("-------",userId)
+const updateUser = async (userId: string, payload: Partial<IUser>, decodedToken: JwtPayload) => {
 
     const isUserExist = await User.findById(userId);
 
@@ -57,14 +68,21 @@ export const updateUser = async (userId: string, payload: Partial<IUser>, decode
             throw new AppError(httpStatus.FORBIDDEN, "Your are not authorized")
         }
     }
-    if(payload.isApproved || payload.commissionRate || payload.status) {
+    if(payload.accountStatus || payload.commissionRate || payload.status) {
         if(decodedToken.role === Role.USER || decodedToken.role === Role.AGENT){
             throw new AppError(httpStatus.FORBIDDEN, "Your are not authorized")
         }
     }
 
     if (payload.password) {
-        payload.password = await bcryptjs.hash(payload.password, envVars.BCRYPT_SALT_ROUND)
+        payload.password = await bcryptjs.hash(payload.password, Number(envVars.BCRYPT_SALT_ROUND))
+    }
+
+    if(payload.phone){
+        const phoneRegex = /^01[0-9]{9}$/;
+        if(!phoneRegex.test(payload.phone)){
+            throw new AppError(httpStatus.BAD_REQUEST, 'Invalid phone number format')
+        }
     }
 
     const newUpdateduser = await User.findByIdAndUpdate(userId, payload, {new: true, runValidators: true})
@@ -74,5 +92,6 @@ export const updateUser = async (userId: string, payload: Partial<IUser>, decode
 
 export const UserServices = {
     createUser,
-    updateUser
+    updateUser,
+    getMyProfile
 }

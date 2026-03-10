@@ -1,5 +1,5 @@
 import { Schema, model } from "mongoose";
-import { IWallet } from "./wallet.interface";
+import { IWallet, WalletStatus } from "./wallet.interface";
 
 const walletSchema = new Schema<IWallet>(
   {
@@ -15,9 +15,10 @@ const walletSchema = new Schema<IWallet>(
       default: 50,
       min: 0,
     },
-    isBlocked: {
-      type: Boolean,
-      default: false,
+    status: {
+      type: String,
+      enum: Object.values(WalletStatus),
+      default: WalletStatus.ACTIVE
     },
   },
   {

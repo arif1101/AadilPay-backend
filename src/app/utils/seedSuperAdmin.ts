@@ -11,15 +11,13 @@ export const seedSuperAdmin = async() => {
             console.log("Super admin already exist")
             return
         }
-console.log("-----------")
         const hashedPasssword = await bcryptjs.hash(envVars.ADMIN_PASSWORD,Number(envVars.BCRYPT_SALT_ROUND))
-console.log("-----------")//not print get Error: Illegal arguments: undefined, number
         const payload : IUser ={
             name: "Aadil-controller",
             role: Role.ADMIN,
             email: envVars.ADMIN_EMAIL,
             password: hashedPasssword,
-            phone: "01402667768"
+            phone: envVars.PHONE
         }
 
         const Admin = await User.create(payload)

@@ -5,6 +5,8 @@ import { sendResponse } from "../../utils/sendResponse";
 import httpStatus from "http-status-codes"
 import { AgentServices } from "./agent.service";
 import { Transaction } from "../transaction/transaction.model";
+import { JwtPayload } from "jsonwebtoken";
+import AppError from "../../errorHelpers/AppError";
 
 
 
@@ -27,8 +29,8 @@ const getAgentTransactions = catchAsync(
 
 const agentCashIn = catchAsync(async(req: Request, res: Response, next: NextFunction) => {
     const agent = req.user; //AGENT
-    const {userId, amount} = req.body
-    const result = await AgentServices.agentCashIn(agent, userId, amount);
+    const {userPhone, amount} = req.body
+    const result = await AgentServices.agentCashIn(agent, userPhone, amount);
 
     sendResponse(res, {
         statusCode: httpStatus.OK,
@@ -41,9 +43,9 @@ const agentCashIn = catchAsync(async(req: Request, res: Response, next: NextFunc
 // Agent → Withdraw money from user's wallet
 export const agentCashOut = catchAsync(async (req, res) => {
   const agent = req.user;
-  const { userId, amount } = req.body;
+  const { userPhone, amount } = req.body;
 
-  const result = await AgentServices.agentCashOut(agent, userId, amount);
+  const result = await AgentServices.agentCashOut(agent, userPhone, amount);
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
@@ -51,6 +53,28 @@ export const agentCashOut = catchAsync(async (req, res) => {
     data: result,
   });
 });
+
+
+// const updateUser = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+//   const verifiedToken = req.user as JwtPayload;
+
+//   const userId = verifiedToken?.userId;
+
+//   if (!userId) {
+//     throw new AppError(httpStatus.UNAUTHORIZED, "Invalid user information");
+//   }
+
+//   const payload = req.body;
+
+//   const updateUser = await AgentServices.updateAgent(userId, payload, verifiedToken);
+
+//   sendResponse(res, {
+//     success: true,
+//     statusCode: httpStatus.OK,
+//     message: "User updated successfully",
+//     data: updateUser,
+//   });
+// });
 
 
 export const AgentControllers = {

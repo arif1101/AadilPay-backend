@@ -1,12 +1,13 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextFunction, Request, Response } from "express"
-import { getMyProfile, UserServices } from "./user.service"
+import { UserServices } from "./user.service"
 import { sendResponse } from "../../utils/sendResponse"
 import httpStatus from "http-status-codes"
 import { catchAsync } from "../../utils/catchAsync"
 import { JwtPayload } from "jsonwebtoken"
 import AppError from "../../errorHelpers/AppError"
+import { checkAuth } from "../../middlewares/checkAuth"
 
 
 const createUser = catchAsync(async(req: Request, res: Response) => {
@@ -21,26 +22,17 @@ const createUser = catchAsync(async(req: Request, res: Response) => {
 })
 
 // get my profile 
-export const getLoggedInUser = async (req: Request, res: Response) => {
-  const userId = (req as any).user?._id;
-
-  if (!userId) {
-    return res.status(401).json({ message: 'Unauthorized' });
-  }
-
-  const user = await getMyProfile(userId);
-
-  if (!user) {
-    return res.status(404).json({ message: 'User not found' });
-  }
+const getMyProfile = catchAsync(async(req: Request, res: Response, next: NextFunction) => {
+  const userId = (req as any).user?.userId;
+  const result = await UserServices.getMyProfile(userId)
 
   sendResponse(res, {
-      success: true,
-      statusCode: httpStatus.OK,
-      message: "User Retrieved successfully",
-      data: user
-  })
-};
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'User profile retrieved successfully',
+    data: result,
+  });
+})
 
 // update own user 
 const updateUser = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
@@ -70,5 +62,6 @@ const updateUser = catchAsync(async (req: Request, res: Response, next: NextFunc
 
 export const UserControllers = {
     createUser,
-    updateUser
+    updateUser,
+    getMyProfile
 }

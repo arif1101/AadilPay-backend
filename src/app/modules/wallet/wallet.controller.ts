@@ -21,11 +21,39 @@ export const getMyWallet = catchAsync(async(req: Request, res: Response, next: N
 
 })
 
+const topUp = catchAsync(async(req: Request, res: Response, next: NextFunction) => {
+    const user = req.user as JwtPayload;
+    const {amount} = req.body;
+
+    const result = await WalletServices.topUp(user, amount);
+
+    sendResponse(res, {
+        success: true,
+        statusCode: httpStatus.OK,
+        message: 'Wallet topped up successfully',
+        data: result,
+    });
+})
+
+// const withdraw = catchAsync(async(req: Request, res: Response, next: NextFunction) => {
+//     const {amount, agentId} = req.body;
+//     const user = req.user;
+
+//     const result = await WalletServices.withdraw(user, amount, agentId);
+
+//     sendResponse(res, {
+//     statusCode: httpStatus.OK,
+//     success: true,
+//     message: "Withdrawal successful",
+//     data: result,
+//     });
+// })
+
 const withdraw = catchAsync(async(req: Request, res: Response, next: NextFunction) => {
-    const {amount, agentId} = req.body;
+    const {amount, agentNumber} = req.body;
     const user = req.user;
 
-    const result = await WalletServices.withdraw(user, amount, agentId);
+    const result = await WalletServices.withdraw(user, agentNumber, amount);
 
     sendResponse(res, {
     statusCode: httpStatus.OK,
@@ -36,12 +64,26 @@ const withdraw = catchAsync(async(req: Request, res: Response, next: NextFunctio
 })
 
 // transfer or send money 
+// using receiverId and amoun 
+// const sendMoney = catchAsync(async(req: Request, res: Response, next: NextFunction) => {
+//     const {receiverId, amount} = req.body
+//     const sender = req.user
+//     const result = await WalletServices.sendMoney(sender, receiverId, amount)
+
+//     sendResponse(res, {
+//         statusCode: httpStatus.OK,
+//         success: true,
+//         message: "send money successful",
+//         data: result,
+//     });
+// })
+
+// using receiver number and amoun 
 
 const sendMoney = catchAsync(async(req: Request, res: Response, next: NextFunction) => {
-    const {receiverId, amount} = req.body
+    const {receiverNumber, amount} = req.body
     const sender = req.user
-    const result = await WalletServices.sendMoney(sender, receiverId, amount)
-    console.log("result : ", result)
+    const result = await WalletServices.sendMoney(sender, receiverNumber, amount)
 
     sendResponse(res, {
         statusCode: httpStatus.OK,
@@ -51,9 +93,36 @@ const sendMoney = catchAsync(async(req: Request, res: Response, next: NextFuncti
     });
 })
 
+const blockWallet = catchAsync(async(req: Request, res: Response, next: NextFunction) => {
+    const walletId = req.params.id;
+    const result = await WalletServices.blockWallet(walletId);
+
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: 'Wallet blocked successfully',
+      data: result,
+    });
+})
+
+const activeWallet = catchAsync(async (req: Request, res: Response) => {
+    const walletId = req.params.id;
+    const result = await WalletServices.activeWallet(walletId);
+
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: 'Wallet unblocked successfully',
+      data: result,
+    });
+})
+
 
 export const WalletControllers = {
     getMyWallet,
     withdraw,
-    sendMoney
+    sendMoney,
+    blockWallet,
+    activeWallet,
+    topUp
 }
